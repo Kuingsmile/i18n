@@ -22,14 +22,14 @@ export interface IFileSyncAdapterConstructorOptions {
 }
 
 export enum EFileChangeType {
-  change = 'change',
+  change = 'change'
 }
 
 export enum ERUN_ENV {
-  dev = 'development',
+  dev = 'development'
 }
 
 export enum EPlatform {
   node = 'node',
-  web = 'web',
+  web = 'web'
 }

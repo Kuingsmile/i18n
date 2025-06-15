@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { IFileSyncAdapterConstructorOptions, ILocale,ILocaleFileName, ILocaleMap } from '../types'
+import { IFileSyncAdapterConstructorOptions, ILocale, ILocaleFileName, ILocaleMap } from '../types'
 import { logger } from '../utils'
 import { BaseAdapter } from './base'
 
@@ -10,25 +10,25 @@ export class FileSyncAdapter extends BaseAdapter {
   private localeFileName: ILocaleFileName = {}
   private readonly localesBaseDir: string
 
-  constructor (options: IFileSyncAdapterConstructorOptions) {
+  constructor(options: IFileSyncAdapterConstructorOptions) {
     super()
     const { localesBaseDir, localeFileName } = options
     this.localesBaseDir = localesBaseDir
-    if (localeFileName !== null  && localeFileName !== undefined) {
+    if (localeFileName !== null && localeFileName !== undefined) {
       this.localeFileName = localeFileName
     } else {
       this.guessLocaleFileName(localesBaseDir)
     }
   }
 
-  getLocale (language: string): ILocale {
+  getLocale(language: string): ILocale {
     if (!this.locales[language]) {
       this.loadLocale(language)
     }
     return this.locales[language]
   }
 
-  private loadLocale (language: string): void {
+  private loadLocale(language: string): void {
     if (!this.localeFileName[language]) {
       logger.error(`can't locate the locale file of language ${language}`)
       return
@@ -46,7 +46,7 @@ export class FileSyncAdapter extends BaseAdapter {
     }
   }
 
-  private guessLocaleFileName (dir: string): void {
+  private guessLocaleFileName(dir: string): void {
     const files = fs.readdirSync(dir)
     const localeFileName: ILocaleFileName = {}
     files.forEach((fileName: string) => {

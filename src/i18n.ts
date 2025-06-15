@@ -9,30 +9,30 @@ export class I18n {
   private currentLanguage: string
   private defaultLanguage: string
 
-  constructor (options: II18nConstructorOptions) {
+  constructor(options: II18nConstructorOptions) {
     const { adapter, defaultLanguage } = options
     this.adapter = adapter
     this.currentLanguage = defaultLanguage.trim()
     this.defaultLanguage = this.currentLanguage
   }
 
-  getAdapter (): BaseAdapter {
+  getAdapter(): BaseAdapter {
     return this.adapter
   }
 
-  getLanguage (): string {
+  getLanguage(): string {
     return this.currentLanguage
   }
 
-  setLanguage (language: string): void {
+  setLanguage(language: string): void {
     this.currentLanguage = language.trim()
   }
 
-  setDefaultLanguage (language: string): void {
+  setDefaultLanguage(language: string): void {
     this.defaultLanguage = language.trim()
   }
 
-  private getLocale (): ILocale | null {
+  private getLocale(): ILocale | null {
     let currentLocale = this.adapter.getLocale(this.currentLanguage)
     if (!currentLocale) {
       currentLocale = this.adapter.getLocale(this.defaultLanguage)
@@ -45,7 +45,7 @@ export class I18n {
     return currentLocale
   }
 
-  translate (phrase: string, args?: any): string | undefined {
+  translate(phrase: string, args?: any): string | undefined {
     const currentLocale = this.getLocale()
     if (!currentLocale) {
       return
@@ -62,7 +62,7 @@ export class I18n {
     return this.postProcess(template, args)
   }
 
-  private postProcess (template: string, args?: any): string | undefined {
+  private postProcess(template: string, args?: any): string | undefined {
     if (!template) {
       return
     }
