@@ -13,7 +13,7 @@ const fileSyncAdapter = new FileSyncAdapter({
 const objectAdapter = new ObjectAdapter({
   zh: {
     user: {
-      name: 'PicGo',
+      name: 'PicList',
       country: '中国',
     },
     report: {
@@ -23,7 +23,7 @@ const objectAdapter = new ObjectAdapter({
   },
   en: {
     user: {
-      name: 'PicGo',
+      name: 'PicList',
       country: 'China',
     },
     report: {
@@ -66,7 +66,7 @@ describe('i18n', () => {
       objectAdapter.setLocales({
         en: {
           user: {
-            name: 'PicGo',
+            name: 'PicList',
             country: 'China',
           },
           post: {
@@ -84,14 +84,14 @@ describe('i18n', () => {
     })
     it('getLocale null but change to default', () => {
       i18n.setDefaultLanguage('en')
-      equal(i18n.translate('user.name'), 'PicGo')
+      equal(i18n.translate('user.name'), 'PicList')
     })
     it('language can has upper-case string', () => {
       objectAdapter.setLocale('zh-CN', {
-        test: '测试PicGo'
+        test: '测试PicList'
       })
       i18n.setLanguage('zh-CN')
-      equal(i18n.translate('test'), '测试PicGo')
+      equal(i18n.translate('test'), '测试PicList')
     })
   });
 });
