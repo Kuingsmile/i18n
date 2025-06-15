@@ -1,26 +1,23 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import { BaseAdapter } from './base'
+import fs from 'node:fs'
+import path from 'node:path'
+
+import { IFileSyncAdapterConstructorOptions, ILocale,ILocaleFileName, ILocaleMap } from '../types'
 import { logger } from '../utils'
-import { EFileChangeType, ERUN_ENV, IFileSyncAdapterConstructorOptions, ILocaleMap, ILocaleFileName, ILocale } from '../types'
+import { BaseAdapter } from './base'
 
 export class FileSyncAdapter extends BaseAdapter {
   private locales: ILocaleMap = {}
   private localeFileName: ILocaleFileName = {}
   private readonly localesBaseDir: string
+
   constructor (options: IFileSyncAdapterConstructorOptions) {
     super()
     const { localesBaseDir, localeFileName } = options
     this.localesBaseDir = localesBaseDir
-    if (localeFileName != null) {
+    if (localeFileName !== null  && localeFileName !== undefined) {
       this.localeFileName = localeFileName
     } else {
       this.guessLocaleFileName(localesBaseDir)
-    }
-
-    // only for dev env
-    if (process.env.NODE_ENV === ERUN_ENV.dev) {
-      this.watch(this.localesBaseDir)
     }
   }
 
@@ -33,7 +30,7 @@ export class FileSyncAdapter extends BaseAdapter {
 
   private loadLocale (language: string): void {
     if (!this.localeFileName[language]) {
-      logger.error(`can 't locate the locale file of language ${language}`)
+      logger.error(`can't locate the locale file of language ${language}`)
       return
     }
     const filePath = path.join(this.localesBaseDir, this.localeFileName[language])
@@ -59,24 +56,5 @@ export class FileSyncAdapter extends BaseAdapter {
     logger.log(`guess locale file path from ${dir}`)
     logger.log(`localeFileName: ${JSON.stringify(localeFileName)}`)
     this.localeFileName = localeFileName
-  }
-
-  // watch the change of files under `dir`
-  private watch (dir: string): void {
-    fs.watch(dir, (eventType: string, fileName: string) => {
-      let language = ''
-      const { localeFileName } = this
-      for (const lan in localeFileName) {
-        if (localeFileName.hasOwnProperty(lan)) {
-          if (localeFileName[lan] === fileName) {
-            language = lan
-          }
-        }
-      }
-      if (language && eventType === EFileChangeType.change) {
-        this.loadLocale(language) // update locale
-        logger.log(`${fileName} has updated`)
-      }
-    })
   }
 }

@@ -1,7 +1,11 @@
-const assert = require('assert');
-const path = require('path');
-const { I18n, FileSyncAdapter, ObjectAdapter } = require('../dist/index');
+import { equal } from 'assert';
+import path from 'path';
+import {fileURLToPath} from 'url';
+import  { describe, it } from 'node:test';
+import { I18n, FileSyncAdapter, ObjectAdapter } from '../dist/index.cjs';
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const fileSyncAdapter = new FileSyncAdapter({
   localesBaseDir: path.resolve(__dirname, './locales'),
 });
@@ -37,11 +41,11 @@ describe('i18n', () => {
     });
 
     it('translate', () => {
-      assert.equal(i18n.translate('report.plural', { cnt: 2 }), '2个报告');
+      equal(i18n.translate('report.plural', { cnt: 2 }), '2个报告');
     });
     it('setLanguage', () => {
       i18n.setLanguage('en');
-      assert.equal(i18n.translate('report.plural', { cnt: 2 }), '2 reports');
+      equal(i18n.translate('report.plural', { cnt: 2 }), '2 reports');
     });
   });
 
@@ -51,11 +55,11 @@ describe('i18n', () => {
       defaultLanguage: 'zh',
     });
     it('translate', () => {
-      assert.equal(i18n.translate('report.plural', { cnt: 2 }), '2个报告');
+      equal(i18n.translate('report.plural', { cnt: 2 }), '2个报告');
     });
     it('setLanguage', () => {
       i18n.setLanguage('en');
-      assert.equal(i18n.translate('report.plural', { cnt: 2 }), '2 reports');
+      equal(i18n.translate('report.plural', { cnt: 2 }), '2 reports');
     });
 
     it('setLocales', () => {
@@ -71,23 +75,23 @@ describe('i18n', () => {
           },
         },
       });
-      assert.equal(i18n.translate('post.plural', { cnt: 2 }), '2 posts');
+      equal(i18n.translate('post.plural', { cnt: 2 }), '2 posts');
 
     });
     it('getLocale null & translate to undefined', () => {
       i18n.setLanguage('TEST')
-      assert.equal(i18n.translate('test'), undefined)
+      equal(i18n.translate('test'), undefined)
     })
     it('getLocale null but change to default', () => {
       i18n.setDefaultLanguage('en')
-      assert.equal(i18n.translate('user.name'), 'PicGo')
+      equal(i18n.translate('user.name'), 'PicGo')
     })
     it('language can has upper-case string', () => {
       objectAdapter.setLocale('zh-CN', {
         test: '测试PicGo'
       })
       i18n.setLanguage('zh-CN')
-      assert.equal(i18n.translate('test'), '测试PicGo')
+      equal(i18n.translate('test'), '测试PicGo')
     })
   });
 });

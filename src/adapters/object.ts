@@ -1,5 +1,5 @@
-import { BaseAdapter } from './base'
 import { ILocale, ILocaleMap } from '../types'
+import { BaseAdapter } from './base'
 
 export class ObjectAdapter extends BaseAdapter {
   private locales: ILocaleMap = {}
