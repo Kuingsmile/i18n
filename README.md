@@ -1,190 +1,368 @@
-# i18n
+# @piclist/i18n
 
-i18n 工具
+![npm version](https://img.shields.io/npm/v/@piclist/i18n.svg)
+![license](https://img.shields.io/npm/l/@piclist/i18n.svg)
+![downloads](https://img.shields.io/npm/dm/@piclist/i18n.svg)
 
-## 用法
+A lightweight, flexible, and powerful internationalization (i18n) library for JavaScript and TypeScript applications. Designed to work seamlessly in both Node.js and browser environments.
 
-i18n 默认提供 FileSyncAdapter、ObjectAdapter 两个适配器，适用的场景分别为:
+## ✨ Features
 
-- FileSyncAdapter: locales 信息保存在文件中, 该适配器**只适用于 Nodejs 平台**
-- ObjectAdapter: locales 信息保存在对象中, 该适配器适用于 Web 平台、Nodejs 平台
+- 🚀 **Lightweight & Fast** - Minimal overhead with maximum performance
+- 🔧 **Flexible Adapters** - Support for different storage backends
+- 🌐 **Universal** - Works in both Node.js and browser environments
+- 📝 **TypeScript Support** - Full TypeScript definitions included
+- 🎯 **Template Variables** - Dynamic string interpolation with `${variable}` syntax
+- 🔌 **Extensible** - Easy to create custom adapters
+- 📦 **Zero Dependencies** - No external dependencies required
 
-### Nodejs
+## 📦 Installation
 
-- 安装
+```bash
+npm install @piclist/i18n
+```
 
-  npm install @piclist/i18n
+```bash
+yarn add @piclist/i18n
+```
 
-- 使用
+```bash
+pnpm add @piclist/i18n
+```
 
-  ```js
-  import { I18n, FileSyncAdapter, ObjectAdapter } from '@piclist/i18n';
+## 🚀 Quick Start
 
-  // use FileSyncAdapter
-  const fileSyncAdapter = new FileSyncAdapter({
-    localesBaseDir: path.resolve(__dirname, './locales'), // locales文件目录
-  });
+### Using ObjectAdapter (Recommended for most cases)
 
-  const i18n = new I18n({
-    adapter: fileSyncAdapter,
-    defaultLanguage: 'zh',
-  });
+```typescript
+import { I18n, ObjectAdapter } from '@piclist/i18n';
 
-  // use ObjectAdapter
-  const objectAdapter = new ObjectAdapter({
-    zh: {
-      user: {
-        name: 'PicList',
-        country: '中国',
-      },
-      report: {
-        singular: ' ${cnt}个报告',
-        plural: '${cnt}个报告',
-      },
-    },
-    en: {
-      user: {
-        name: 'PicList',
-        country: 'China',
-      },
-      report: {
-        singular: 'only ${cnt} report',
-        plural: '${cnt} reports',
-      },
-    },
-  });
-  const i18n = new I18n({
-    adapter: objectAdapter,
-    defaultLanguage: 'zh',
-  });
-  ```
+const adapter = new ObjectAdapter({
+  en: {
+    greeting: 'Hello, ${name}!',
+    user: {
+      welcome: 'Welcome back!',
+      profile: 'User Profile'
+    }
+  },
+  zh: {
+    greeting: '你好，${name}！',
+    user: {
+      welcome: '欢迎回来！',
+      profile: '用户资料'
+    }
+  }
+});
 
-### 自定义 Adapter
+const i18n = new I18n({
+  adapter,
+  defaultLanguage: 'en'
+});
 
-```js
-import { BaseAdapter } from '@piclist/i18n';
-class CustomAdapter extends BaseAdapter {
-  getLocale(language) {}
+// Basic usage
+console.log(i18n.translate('user.welcome')); // "Welcome back!"
+
+// With variables
+console.log(i18n.translate('greeting', { name: 'John' })); // "Hello, John!"
+
+// Switch language
+i18n.setLanguage('zh');
+console.log(i18n.translate('greeting', { name: '张三' })); // "你好，张三！"
+```
+
+### Using FileSyncAdapter (Node.js only)
+
+```typescript
+import { I18n, FileSyncAdapter } from '@piclist/i18n';
+import path from 'path';
+
+const adapter = new FileSyncAdapter({
+  localesBaseDir: path.resolve(__dirname, './locales')
+});
+
+const i18n = new I18n({
+  adapter,
+  defaultLanguage: 'en'
+});
+
+console.log(i18n.translate('welcome.message'));
+```
+
+**Locale files structure:**
+
+```text
+locales/
+├── en.json
+├── zh.json
+└── fr.json
+```
+
+**en.json:**
+
+```json
+{
+  "welcome": {
+    "message": "Welcome to our application!",
+    "subtitle": "Get started by exploring our features"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact"
+  }
 }
 ```
 
-### API
+## 📚 API Reference
 
-#### I18n
+### I18n Class
 
-- 构造函数 I18n
+#### Constructor
 
-  - 参数: options
+```typescript
+new I18n(options: II18nConstructorOptions)
+```
 
-    ```json
-    {
-      "adater": BaseAdapter, // 适配器
-      "defaultLanguage": string // 默认语言
-    }
-    ```
+**Options:**
 
-  - 返回值: I18n 实例
+- `adapter`: BaseAdapter - The adapter instance to use for locale data
+- `defaultLanguage`: string - The default language code
 
-- i18n.setLanguage
+#### Methods
 
-  - 参数: language, 语言类型
-  - 无返回值
+##### `translate(phrase: string, args?: object): string`
 
-- i18n.getLauguage
+Translates a phrase using dot notation for nested keys.
 
-  - 无参数
-  - 返回当前语言类型
+```typescript
+// Basic translation
+i18n.translate('user.name');
 
-- i18n.translate
+// With variables
+i18n.translate('welcome.message', { name: 'John', count: 5 });
+```
 
-  - 参数 phrase, args
-  - 返回翻译后文本
+##### `setLanguage(language: string): void`
 
-  ```json
-  // en.json
-  {
-    "report": {
-      "singular": "only ${cnt} report",
-      "plural": "${cnt} reports"
-    }
-  }
-  ```
+Changes the current language.
 
-  ```js
-  i18n.translate('report.singular', { cnt: 1 }); // only 1 report
-  ```
+```typescript
+i18n.setLanguage('zh');
+```
 
-#### FileSyncAdapter
+##### `getLanguage(): string`
 
-- 构造函数 FileSyncAdapter
+Returns the current language code.
 
-  - 参数: options
+```typescript
+const currentLang = i18n.getLanguage(); // 'en'
+```
 
-    ```json
-    {
-      "localesBaseDir": string, // locales 文件所在路径，绝对路径
-      "localeFileName": { "language": 对应的locales文件名 } // localeFileName存储语言类型到locales文件的映射，该项可选，当不传入时，将自动扫描localesBaseDir目录下文件，并将各个locale文件名作为该文件对应的语言
-    }
-    ```
+##### `setDefaultLanguage(language: string): void`
 
-  - 返回 FileSyncAdapter 实例
+Changes the default fallback language.
 
-- fileSyncAdapter.getLocale
-  - 参数 languag, 语言类型
-  - 返回 language 对应的 locale 数据
+```typescript
+i18n.setDefaultLanguage('en');
+```
+
+##### `getAdapter(): BaseAdapter`
+
+Returns the current adapter instance.
+
+```typescript
+const adapter = i18n.getAdapter();
+```
+
+### Adapters
 
 #### ObjectAdapter
 
-- 构造函数 ObjectAdapter
+Stores locale data in memory as JavaScript objects. Perfect for web applications and smaller datasets.
 
-  - 参数 locales, 保存 locales 信息的对象
+```typescript
+new ObjectAdapter(locales: Record<string, ILocale>)
+```
 
-  ```json
-  {
-    "zh": {
-      "user": {
-        "name": "PicList",
-        "country": "China"
-      },
-      "report": {
-        "singular": " ${cnt}个报告",
-        "plural": "${cnt}个报告"
-      }
-    },
-    "en": {
-      "user": {
-        "name": "PicList",
-        "country": "China"
-      },
-      "report": {
-        "singular": "only ${cnt} report",
-        "plural": "${cnt} reports"
+**Methods:**
+
+- `getLocale(language: string): ILocale | null` - Get locale data for a specific language
+- `setLocales(locales: Record<string, ILocale>): void` - Update locale data dynamically
+
+**Example:**
+
+```typescript
+const adapter = new ObjectAdapter({
+  en: { hello: 'Hello' },
+  zh: { hello: '你好' }
+});
+
+// Update locales dynamically
+adapter.setLocales({
+  en: { hello: 'Hello', goodbye: 'Goodbye' },
+  fr: { hello: 'Bonjour', goodbye: 'Au revoir' }
+});
+```
+
+#### FileSyncAdapter
+
+Reads locale data from JSON files on the filesystem. Ideal for Node.js applications.
+
+```typescript
+new FileSyncAdapter(options: IFileSyncAdapterOptions)
+```
+
+**Options:**
+
+- `localesBaseDir`: string - Absolute path to the directory containing locale files
+- `localeFileName?`: Record<string, string> - Optional mapping of language codes to file names
+
+**Methods:**
+
+- `getLocale(language: string): ILocale | null` - Get locale data for a specific language
+
+**Examples:**
+
+```typescript
+// Auto-detect locale files
+const adapter = new FileSyncAdapter({
+  localesBaseDir: '/path/to/locales'
+});
+
+// Custom file mapping
+const adapter = new FileSyncAdapter({
+  localesBaseDir: '/path/to/locales',
+  localeFileName: {
+    'en': 'english.json',
+    'zh': 'chinese.json'
+  }
+});
+```
+
+### Creating Custom Adapters
+
+Extend the `BaseAdapter` class to create your own storage backend:
+
+```typescript
+import { BaseAdapter, ILocale } from '@piclist/i18n';
+
+class DatabaseAdapter extends BaseAdapter {
+  private db: Database;
+
+  constructor(database: Database) {
+    super();
+    this.db = database;
+  }
+
+  getLocale(language: string): ILocale | null {
+    // Implement your database logic here
+    return this.db.getLocaleData(language);
+  }
+}
+
+// Usage
+const adapter = new DatabaseAdapter(myDatabase);
+const i18n = new I18n({ adapter, defaultLanguage: 'en' });
+```
+
+## 🌟 Advanced Usage
+
+### Nested Translation Keys
+
+Access nested translation keys using dot notation:
+
+```json
+{
+  "user": {
+    "profile": {
+      "settings": {
+        "privacy": "Privacy Settings"
       }
     }
   }
-  ```
+}
+```
 
-  - 返回 ObjectAdapter 实例
+```typescript
+i18n.translate('user.profile.settings.privacy'); // "Privacy Settings"
+```
 
-- objectAdapter.getLocale
-  - 参数 languag, 语言类型
-  - 返回 language 对应的 locale 数据
+### Variable Interpolation
 
-- objectAdapter.setLocales 用于动态修改 objectAdapter 上的 locales 数据
+Use `${variable}` syntax for dynamic content:
 
-  - 参数 locales, locales 数据
-  - 无返回值
+```json
+{
+  "welcome": "Welcome back, ${username}! You have ${count} new messages.",
+  "product": {
+    "price": "Price: ${currency}${amount}",
+    "discount": "${percent}% off until ${date}"
+  }
+}
+```
 
-  ```js
-  objectAdapter.setLocales({
-    zh: {
-      newData: 'this is new Data',
-    },
-  });
-  ```
+```typescript
+i18n.translate('welcome', { 
+  username: 'John', 
+  count: 3 
+}); // "Welcome back, John! You have 3 new messages."
 
-### License
+i18n.translate('product.price', { 
+  currency: '$', 
+  amount: 29.99 
+}); // "Price: $29.99"
+```
+
+### Fallback Behavior
+
+When a translation key is not found in the current language, the library automatically falls back to the default language:
+
+```typescript
+const i18n = new I18n({
+  adapter: new ObjectAdapter({
+    en: { greeting: 'Hello' },
+    es: { /* greeting key missing */ }
+  }),
+  defaultLanguage: 'en'
+});
+
+i18n.setLanguage('es');
+i18n.translate('greeting'); // Falls back to "Hello" from English
+```
+
+## 🔧 TypeScript Support
+
+The library is written in TypeScript and includes comprehensive type definitions:
+
+```typescript
+import { I18n, ObjectAdapter, ILocale, II18nConstructorOptions } from '@piclist/i18n';
+
+// Type-safe locale definition
+const locales: Record<string, ILocale> = {
+  en: {
+    message: 'Hello, world!'
+  }
+};
+
+const adapter = new ObjectAdapter(locales);
+const i18n = new I18n({ adapter, defaultLanguage: 'en' });
+```
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## 📄 License
 
 [MIT](http://opensource.org/licenses/MIT)
 
+Copyright (c) 2020 PicGo Group
 Copyright (c) 2025 Kuingsmile
