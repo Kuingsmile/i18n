@@ -1,6 +1,6 @@
 {
   "name": "@piclist/i18n",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "i18n tool",
   "type": "module",
   "main": "./dist/index.cjs",
