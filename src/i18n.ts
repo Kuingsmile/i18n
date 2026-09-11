@@ -69,8 +69,8 @@ export class I18n {
     return this.postProcess(template, args)
   }
 
-  private postProcess(template: string, args?: any): string | undefined {
-    if (!template) {
+  private postProcess(template: unknown, args?: any): string | undefined {
+    if (typeof template !== 'string') {
       return
     }
     if (!args) {

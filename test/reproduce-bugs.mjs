@@ -334,13 +334,23 @@ async function main() {
 
   await probe(8, 'P2', 'Empty and non-string template handling is incorrect', () =>
     runtime((_api, make) => {
-      const i18n = make({ en: { blank: '', user: { name: 'Ana' } } })
+      const i18n = make({ en: { blank: '', user: { name: 'Ana' }, number: 4, boolean: false, nil: null } })
+      const localizedBlank = make({ en: { label: 'Default' }, es: { label: '' } })
+      localizedBlank.setLanguage('es')
       return [
         valueCheck('preserve an empty translation', '', () => i18n.translate('blank')),
+        valueCheck('preserve an empty translation with arguments', '', () => i18n.translate('blank', { value: 1 })),
+        valueCheck('empty selected-language string does not trigger fallback', '', () =>
+          localizedBlank.translate('label'),
+        ),
         valueCheck('namespace lookup returns no string', undefined, () => i18n.translate('user')),
         valueCheck('namespace with interpolation args does not throw', undefined, () =>
           i18n.translate('user', { name: 'Bob' }),
         ),
+        valueCheck('number values return no string', undefined, () => i18n.translate('number')),
+        valueCheck('boolean values return no string', undefined, () => i18n.translate('boolean')),
+        valueCheck('null values return no string', undefined, () => i18n.translate('nil')),
+        valueCheck('nested string values still translate', 'Ana', () => i18n.translate('user.name')),
       ]
     }),
   )
