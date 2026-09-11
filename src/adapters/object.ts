@@ -8,8 +8,8 @@ export class ObjectAdapter extends BaseAdapter {
     this.locales = locales
   }
 
-  getLocale(language: string): ILocale {
-    return this.locales[language]
+  getLocale(language: string): ILocale | null {
+    return this.locales[language] ?? null
   }
 
   // change the locales

@@ -356,6 +356,7 @@ async function main() {
   )
 
   await probe(9, 'P2', 'Adapter declarations hide missing locales', () => {
+    const directory = fixture('missing-locale-contract', {})
     const nullableDiagnostics = compile(`import { BaseAdapter } from '@piclist/i18n';
       class NullableAdapter extends BaseAdapter {
         getLocale(_language: string): Record<string, unknown> | null { return null; }
@@ -367,11 +368,24 @@ async function main() {
     if (unsafeDiagnostics.some(code => ![2531, 2532, 18047, 18048, 18049].includes(code))) {
       throw new Error('Unexpected compiler diagnostic')
     }
+    const unsafeFileDiagnostics = compile(`import { FileSyncAdapter } from '@piclist/i18n';
+      const locale = new FileSyncAdapter({ localesBaseDir: '.', localeFileName: {} }).getLocale('missing');
+      locale.greeting.toUpperCase();`)
+    if (unsafeFileDiagnostics.some(code => ![2531, 2532, 18047, 18048, 18049].includes(code))) {
+      throw new Error('Unexpected compiler diagnostic')
+    }
     return [
       check('nullable custom adapter: TypeScript diagnostic codes', [], nullableDiagnostics),
+      check('FileSyncAdapter also requires a null check', true, unsafeFileDiagnostics.length > 0),
       ...runtime(api => {
         const result = observe(() => new api.ObjectAdapter({}).getLocale('missing').greeting.toUpperCase())
         return [
+          valueCheck('ObjectAdapter returns null for a missing locale', null, () =>
+            new api.ObjectAdapter({}).getLocale('missing'),
+          ),
+          valueCheck('FileSyncAdapter returns null for a missing locale', null, () =>
+            new api.FileSyncAdapter({ localesBaseDir: directory, localeFileName: {} }).getLocale('missing'),
+          ),
           check(
             'compiler rejects the lookup that throws at runtime',
             { compilerRejected: true, runtimeThrows: true },

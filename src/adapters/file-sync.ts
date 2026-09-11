@@ -21,11 +21,11 @@ export class FileSyncAdapter extends BaseAdapter {
     }
   }
 
-  getLocale(language: string): ILocale {
+  getLocale(language: string): ILocale | null {
     if (!this.locales[language]) {
       this.loadLocale(language)
     }
-    return this.locales[language]
+    return this.locales[language] ?? null
   }
 
   private loadLocale(language: string): void {
