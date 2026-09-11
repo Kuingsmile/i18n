@@ -46,11 +46,14 @@ export class FileSyncAdapter extends BaseAdapter {
   }
 
   private guessLocaleFileName(dir: string): void {
-    const files = fs.readdirSync(dir)
+    const files = fs.readdirSync(dir, { withFileTypes: true })
     const localeFileName: ILocaleFileName = {}
-    files.forEach((fileName: string) => {
-      const localeName = fileName.replace(path.extname(fileName), '')
-      localeFileName[localeName] = fileName
+    files.forEach(file => {
+      if (!file.isFile() || path.extname(file.name) !== '.json') {
+        return
+      }
+      const localeName = path.basename(file.name, '.json')
+      localeFileName[localeName] = file.name
     })
     logger.log(`guess locale file path from ${dir}`)
     logger.log(`localeFileName: ${JSON.stringify(localeFileName)}`)

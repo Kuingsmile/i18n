@@ -295,6 +295,7 @@ async function main() {
     })
     const withDirectory = fixture('directory-entry', { 'en.json': JSON.stringify({ greeting: 'Hello' }) })
     fs.mkdirSync(path.join(withDirectory, 'es.json'))
+    const mappedFile = fixture('explicit-file-mapping', { 'custom.txt': JSON.stringify({ greeting: 'Hello' }) })
     return runtime(api => [
       valueCheck('en.txt must not override en.json', 'Hello', () => {
         const adapter = new api.FileSyncAdapter({ localesBaseDir: collision })
@@ -305,6 +306,10 @@ async function main() {
         const i18n = new api.I18n({ adapter, defaultLanguage: 'en' })
         i18n.setLanguage('es')
         return i18n.translate('greeting')
+      }),
+      valueCheck('explicit file mappings still allow other extensions', 'Hello', () => {
+        const adapter = new api.FileSyncAdapter({ localesBaseDir: mappedFile, localeFileName: { en: 'custom.txt' } })
+        return new api.I18n({ adapter, defaultLanguage: 'en' }).translate('greeting')
       }),
     ])
   })
