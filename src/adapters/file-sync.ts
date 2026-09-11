@@ -6,8 +6,8 @@ import { logger } from '../utils'
 import { BaseAdapter } from './base'
 
 export class FileSyncAdapter extends BaseAdapter {
-  private locales: ILocaleMap = {}
-  private localeFileName: ILocaleFileName = {}
+  private locales: ILocaleMap = Object.create(null)
+  private localeFileName: ILocaleFileName = Object.create(null)
   private readonly localesBaseDir: string
 
   constructor(options: IFileSyncAdapterConstructorOptions) {
@@ -29,7 +29,7 @@ export class FileSyncAdapter extends BaseAdapter {
   }
 
   private loadLocale(language: string): void {
-    if (!this.localeFileName[language]) {
+    if (!Object.prototype.hasOwnProperty.call(this.localeFileName, language) || !this.localeFileName[language]) {
       logger.error(`can't locate the locale file of language ${language}`)
       return
     }
@@ -47,7 +47,7 @@ export class FileSyncAdapter extends BaseAdapter {
 
   private guessLocaleFileName(dir: string): void {
     const files = fs.readdirSync(dir, { withFileTypes: true })
-    const localeFileName: ILocaleFileName = {}
+    const localeFileName: ILocaleFileName = Object.create(null)
     files.forEach(file => {
       if (!file.isFile() || path.extname(file.name) !== '.json') {
         return

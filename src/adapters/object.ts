@@ -9,6 +9,9 @@ export class ObjectAdapter extends BaseAdapter {
   }
 
   getLocale(language: string): ILocale | null {
+    if (!Object.prototype.hasOwnProperty.call(this.locales, language)) {
+      return null
+    }
     return this.locales[language] ?? null
   }
 
@@ -19,6 +22,11 @@ export class ObjectAdapter extends BaseAdapter {
 
   // change the locale dynamic
   setLocale(language: string, locales: ILocale): void {
-    this.locales[language] = locales
+    Object.defineProperty(this.locales, language, {
+      value: locales,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    })
   }
 }

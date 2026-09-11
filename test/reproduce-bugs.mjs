@@ -397,19 +397,67 @@ async function main() {
   })
 
   await probe(10, 'P3', 'Inherited properties are mistaken for locales', () => {
-    const directory = fixture('prototype-lookup', { 'en.json': JSON.stringify({ name: 'Hello' }) })
+    const directory = fixture('prototype-lookup', {
+      'en.json': JSON.stringify({ name: 'Hello' }),
+      'inherited.json': JSON.stringify({ name: 'Inherited' }),
+    })
+    const specialNames = fixture('special-locale-names', {
+      'constructor.json': JSON.stringify({ name: 'Constructor locale' }),
+      '__proto__.json': JSON.stringify({ name: 'Prototype locale' }),
+    })
     return runtime(api => {
       const adapters = [
         ['ObjectAdapter', new api.ObjectAdapter({ en: { name: 'Hello' } })],
         ['FileSyncAdapter', new api.FileSyncAdapter({ localesBaseDir: directory })],
       ]
-      return adapters.map(([name, adapter]) =>
-        valueCheck(`${name}: unknown language "constructor"`, 'Hello', () => {
-          const i18n = new api.I18n({ adapter, defaultLanguage: 'en' })
-          i18n.setLanguage('constructor')
+      return [
+        ...adapters.flatMap(([name, adapter]) =>
+          ['constructor', 'toString', '__proto__'].map(language =>
+            valueCheck(`${name}: unknown language "${language}"`, 'Hello', () => {
+              const i18n = new api.I18n({ adapter, defaultLanguage: 'en' })
+              i18n.setLanguage(language)
+              return i18n.translate('name')
+            }),
+          ),
+        ),
+        valueCheck('ObjectAdapter ignores inherited locale data', 'Hello', () => {
+          const locales = Object.assign(Object.create({ es: { name: 'Inherited' } }), { en: { name: 'Hello' } })
+          const i18n = new api.I18n({ adapter: new api.ObjectAdapter(locales), defaultLanguage: 'en' })
+          i18n.setLanguage('es')
           return i18n.translate('name')
         }),
-      )
+        valueCheck('FileSyncAdapter ignores inherited file mappings', 'Hello', () => {
+          const localeFileName = Object.assign(Object.create({ es: 'inherited.json' }), { en: 'en.json' })
+          const adapter = new api.FileSyncAdapter({ localesBaseDir: directory, localeFileName })
+          const i18n = new api.I18n({ adapter, defaultLanguage: 'en' })
+          i18n.setLanguage('es')
+          return i18n.translate('name')
+        }),
+        valueCheck(
+          'setLocale safely stores special names as own entries',
+          ['Constructor locale', 'Prototype locale', true],
+          () => {
+            const locales = {}
+            const originalPrototype = Object.getPrototypeOf(locales)
+            const adapter = new api.ObjectAdapter(locales)
+            adapter.setLocale('constructor', { name: 'Constructor locale' })
+            adapter.setLocale('__proto__', { name: 'Prototype locale' })
+            return [
+              adapter.getLocale('constructor')?.name,
+              adapter.getLocale('__proto__')?.name,
+              Object.getPrototypeOf(locales) === originalPrototype,
+            ]
+          },
+        ),
+        valueCheck(
+          'FileSyncAdapter loads explicitly present special names',
+          ['Constructor locale', 'Prototype locale'],
+          () => {
+            const adapter = new api.FileSyncAdapter({ localesBaseDir: specialNames })
+            return [adapter.getLocale('constructor')?.name, adapter.getLocale('__proto__')?.name]
+          },
+        ),
+      ]
     })
   })
 
