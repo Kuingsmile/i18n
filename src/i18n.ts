@@ -76,9 +76,8 @@ export class I18n {
     if (!args) {
       return template
     }
-    // see benchmark
-    return Object.keys(args).reduce((res, key) => {
-      return res.replace('${' + key + '}', args[key])
-    }, template)
+    return template.replace(/\$\{([^}]*)\}/g, (placeholder, key: string) =>
+      Object.prototype.hasOwnProperty.call(args, key) ? String(args[key]) : placeholder,
+    )
   }
 }

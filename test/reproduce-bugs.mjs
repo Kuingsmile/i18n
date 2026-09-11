@@ -253,6 +253,10 @@ async function main() {
         ['repeated placeholder', '${name}, ${name}!', { name: 'Ana' }, 'Ana, Ana!'],
         ['literal dollar value', 'Value: ${value}', { value: '$&' }, 'Value: $&'],
         ['inserted values must not be reprocessed', '${a} ${b}', { a: '${b}', b: 'B' }, '${b} B'],
+        ['missing argument stays unchanged', '${missing}', {}, '${missing}'],
+        ['falsy values are interpolated', '${zero}/${no}/${blank}', { zero: 0, no: false, blank: '' }, '0/false/'],
+        ['inherited arguments are ignored', '${name}', Object.create({ name: 'Ana' }), '${name}'],
+        ['argument names are literal', '${a.b} ${a+b}', { 'a.b': 'A', 'a+b': 'B' }, 'A B'],
       ]
       return cases.map(([label, template, args, expected]) =>
         valueCheck(label, expected, () => make({ en: { template } }).translate('template', args)),
