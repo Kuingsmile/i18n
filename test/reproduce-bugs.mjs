@@ -233,9 +233,17 @@ async function main() {
 
   await probe(3, 'P2', 'Missing phrase does not fall back', () =>
     runtime((_api, make) => {
-      const i18n = make({ en: { greeting: 'Hello' }, es: {} })
+      const i18n = make({
+        en: { greeting: 'Hello', user: { name: 'Ana' }, shared: 'English' },
+        es: { user: {}, shared: 'Español' },
+      })
       i18n.setLanguage('es')
-      return [valueCheck('missing es.greeting falls back to en', 'Hello', () => i18n.translate('greeting'))]
+      return [
+        valueCheck('missing es.greeting falls back to en', 'Hello', () => i18n.translate('greeting')),
+        valueCheck('missing nested phrase falls back to en', 'Ana', () => i18n.translate('user.name')),
+        valueCheck('current-language phrase takes precedence', 'Español', () => i18n.translate('shared')),
+        valueCheck('phrase absent from both locales stays missing', undefined, () => i18n.translate('absent')),
+      ]
     }),
   )
 

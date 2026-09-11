@@ -49,13 +49,22 @@ export class I18n {
       return
     }
 
-    const template = phrase.split('.').reduce((object: any, key: string) => {
-      if (!object || !Object.prototype.hasOwnProperty.call(object, key)) {
-        logger.warn(`current locale doesn't contain ${phrase}`)
-        return undefined
-      }
-      return object[key]
-    }, currentLocale)
+    const keys = phrase.split('.')
+    const resolve = (locale: ILocale | null) =>
+      keys.reduce((object: any, key: string) => {
+        if (!object || !Object.prototype.hasOwnProperty.call(object, key)) {
+          return undefined
+        }
+        return object[key]
+      }, locale)
+
+    let template = resolve(currentLocale)
+    if (template === undefined && this.currentLanguage !== this.defaultLanguage) {
+      template = resolve(this.adapter.getLocale(this.defaultLanguage))
+    }
+    if (template === undefined) {
+      logger.warn(`current locale doesn't contain ${phrase}`)
+    }
 
     return this.postProcess(template, args)
   }
