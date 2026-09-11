@@ -162,7 +162,10 @@ async function main() {
     // the real suite. Support both the audited command and its suggested fix.
     let args
     let runner
-    if (packageJson.scripts.test === 'node --test ./test/index.js') {
+    if (
+      packageJson.scripts.test === 'node --test ./test/index.js' ||
+      packageJson.scripts.test === 'node --test ./test/index.js ./test/translation-regressions.mjs'
+    ) {
       args = ['--test', filename]
       runner = 'node --test (current configuration)'
     } else if (packageJson.scripts.test === 'mocha ./test/index.js') {

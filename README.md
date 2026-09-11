@@ -353,8 +353,32 @@ const i18n = new I18n({ adapter, defaultLanguage: 'en' });
 Run the test suite:
 
 ```bash
+npm run build
 npm test
 ```
+
+## Performance benchmarks
+
+Run the benchmark against a fresh production build:
+
+```bash
+npm run benchmark
+```
+
+Save a baseline before changing the implementation, then compare after making changes:
+
+```bash
+npm run benchmark -- --output benchmark/results/baseline.json
+# Make source changes, then rebuild and compare:
+npm run benchmark -- --compare benchmark/results/baseline.json --output benchmark/results/current.json
+```
+
+In PowerShell, use `npm.cmd` in these commands when passing benchmark options.
+
+The benchmark covers object and file adapters, nested and rotating keys, interpolation,
+fallback, language switching, locale updates, and construction. It uses only Node.js
+built-ins and generated fixtures. See [benchmark details and measured results](benchmark/README.md)
+for methodology, options, and limitations.
 
 ## 🤝 Contributing
 

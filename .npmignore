@@ -6,3 +6,4 @@ tsconfig.json
 .vscode/
 src/
 pnpm-lock.yaml
+benchmark/

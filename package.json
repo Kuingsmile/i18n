@@ -31,6 +31,7 @@
   "browser": "./dist/browser.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "benchmark": "npm run build && node benchmark/index.mjs",
     "build": "rollup -c",
     "clean": "rimraf ./dist",
     "cz": "npm run lint && git-cz",
@@ -39,7 +40,7 @@
     "lint:check": "eslint",
     "prepublishOnly": "yarn run clean && yarn run build",
     "release": "yarn run build && bump-version",
-    "test": "node --test ./test/index.js"
+    "test": "node --test ./test/index.js ./test/translation-regressions.mjs"
   },
   "husky": {
     "hooks": {
