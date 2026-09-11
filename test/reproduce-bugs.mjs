@@ -20,6 +20,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { inspect, isDeepStrictEqual } from 'node:util'
+import { runInNewContext } from 'node:vm'
 
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import { rollup } from 'rollup'
@@ -211,7 +212,20 @@ async function main() {
       const nodeImports = [
         ...new Set(imports.filter(id => id.startsWith('node:') || builtinModules.includes(id))),
       ].sort()
-      return [check('Node imports in an ObjectAdapter-only browser bundle', [], nodeImports)]
+      return [
+        check('Node imports in an ObjectAdapter-only browser bundle', [], nodeImports),
+        valueCheck('browser bundle translates without Node globals', ['Hello'], () => {
+          const messages = []
+          runInNewContext(
+            output.find(item => item.type === 'chunk').code,
+            {
+              console: { log: message => messages.push(message) },
+            },
+            { timeout: 5000 },
+          )
+          return messages
+        }),
+      ]
     } finally {
       await bundle.close()
     }
