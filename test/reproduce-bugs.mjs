@@ -92,7 +92,7 @@ async function probe(id, severity, title, callback) {
   }
 }
 
-function compile(source) {
+function compile(source, customConditions = []) {
   // A virtual consumer inside this package tests its real package exports and
   // generated declarations, without adding a file to the working tree.
   const filename = path.join(root, 'test', '__reproduce_consumer__.ts').replaceAll('\\', '/')
@@ -103,6 +103,7 @@ function compile(source) {
     target: ts.ScriptTarget.ESNext,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
+    customConditions,
   }
   const host = ts.createCompilerHost(options)
   const readFile = host.readFile.bind(host)
@@ -315,9 +316,20 @@ async function main() {
   })
 
   await probe(7, 'P2', 'Documented public types are not exported', () => {
-    const diagnostics = compile(`import type { ILocale, II18nConstructorOptions } from '@piclist/i18n';`)
-    if (diagnostics.some(code => ![2305, 2459].includes(code))) throw new Error('Unexpected compiler diagnostic')
-    return [check('import public types: TypeScript diagnostic codes', [], diagnostics)]
+    return [[], ['browser']].map(conditions => {
+      const diagnostics = compile(
+        `import type {
+        ILocale, ILocaleMap, ILocaleFileName, II18nConstructorOptions, IFileSyncAdapterConstructorOptions
+      } from '@piclist/i18n';`,
+        conditions,
+      )
+      if (diagnostics.some(code => ![2305, 2459].includes(code))) throw new Error('Unexpected compiler diagnostic')
+      return check(
+        `${conditions.length ? 'browser' : 'Node'} public types: TypeScript diagnostic codes`,
+        [],
+        diagnostics,
+      )
+    })
   })
 
   await probe(8, 'P2', 'Empty and non-string template handling is incorrect', () =>
