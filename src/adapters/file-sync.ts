@@ -34,15 +34,14 @@ export class FileSyncAdapter extends BaseAdapter {
       return
     }
     const filePath = path.join(this.localesBaseDir, this.localeFileName[language])
-    const fileContent = fs.readFileSync(filePath, {
-      encoding: 'utf-8',
-    })
     try {
+      const fileContent = fs.readFileSync(filePath, {
+        encoding: 'utf-8',
+      })
       const locale = JSON.parse(fileContent)
       this.locales[language] = locale
-    } catch (err: any) {
-      logger.error(`unable to parse locales from file (maybe ${filePath} is empty or invalid json?)`)
-      logger.error(`raw error info: ${err}`)
+    } catch {
+      logger.error(`unable to read or parse locale file ${filePath}`)
     }
   }
 

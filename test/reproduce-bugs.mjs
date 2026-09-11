@@ -265,15 +265,26 @@ async function main() {
   )
 
   await probe(5, 'P2', 'Unreadable locale file prevents fallback', () => {
-    const directory = fixture('missing-file', { 'en.json': JSON.stringify({ greeting: 'Hello' }) })
+    const directory = fixture('missing-file', {
+      'en.json': JSON.stringify({ greeting: 'Hello' }),
+      'invalid.json': 'synthetic non-JSON fixture',
+    })
     return runtime(api => {
       const adapter = new api.FileSyncAdapter({
         localesBaseDir: directory,
-        localeFileName: { en: 'en.json', es: 'missing.json' },
+        localeFileName: { en: 'en.json', es: 'missing.json', fr: 'invalid.json' },
       })
       const i18n = new api.I18n({ adapter, defaultLanguage: 'en' })
-      i18n.setLanguage('es')
-      return [valueCheck('missing es file falls back to en', 'Hello', () => i18n.translate('greeting'))]
+      return [
+        valueCheck('missing es file falls back to en', 'Hello', () => {
+          i18n.setLanguage('es')
+          return i18n.translate('greeting')
+        }),
+        valueCheck('invalid JSON still falls back to en', 'Hello', () => {
+          i18n.setLanguage('fr')
+          return i18n.translate('greeting')
+        }),
+      ]
     })
   })
 
