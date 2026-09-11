@@ -3,16 +3,16 @@ import { defineConfig } from 'rollup'
 import { dts } from 'rollup-plugin-dts'
 
 const external = [
-  'chalk', 
-  'tslib', 
-  'fs', 
-  'path', 
-  'util', 
-  'node:fs', 
-  'node:path', 
+  'chalk',
+  'tslib',
+  'fs',
+  'path',
+  'util',
+  'node:fs',
+  'node:path',
   'node:util',
   'node:process',
-  'process'
+  'process',
 ]
 
 export default defineConfig([
@@ -24,17 +24,17 @@ export default defineConfig([
         file: 'dist/index.js',
         format: 'esm',
         sourcemap: true,
-        exports: 'named'
+        exports: 'named',
       },
       {
         file: 'dist/index.cjs',
         format: 'cjs',
         sourcemap: true,
         exports: 'named',
-        interop: 'auto'
-      }
+        interop: 'auto',
+      },
     ],
-    external: (id) => {
+    external: id => {
       return external.some(dep => id === dep || id.startsWith(dep + '/'))
     },
     plugins: [
@@ -44,26 +44,26 @@ export default defineConfig([
         declaration: false,
         exclude: ['test/**/*', 'benchmark/**/*'],
         compilerOptions: {
-          module: 'esnext'
-        }
-      })
+          module: 'esnext',
+        },
+      }),
     ],
     treeshake: {
-      moduleSideEffects: false
-    }
+      moduleSideEffects: false,
+    },
   },
   // Type declarations
   {
     input: 'src/index.ts',
     output: {
       file: 'dist/index.d.ts',
-      format: 'esm'
+      format: 'esm',
     },
     external,
     plugins: [
       dts({
-        tsconfig: './tsconfig.json'
-      })
-    ]
-  }
+        tsconfig: './tsconfig.json',
+      }),
+    ],
+  },
 ])

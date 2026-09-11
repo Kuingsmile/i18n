@@ -14,14 +14,15 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "typeRoots": ["./src/types/*", "./node_modules/@types"],
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": ["./src/*"]
     },
-    "lib": ["ScriptHost", "esnext", "DOM"]
+    "lib": ["ScriptHost", "esnext", "DOM"],
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "include": ["./src/**/*.ts", "./tests/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

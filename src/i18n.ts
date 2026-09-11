@@ -2,8 +2,6 @@ import { BaseAdapter } from './adapters'
 import { II18nConstructorOptions, ILocale } from './types'
 import { logger } from './utils'
 
-const DOTNOTATION = '.'
-
 export class I18n {
   private readonly adapter: BaseAdapter
   private currentLanguage: string
@@ -51,7 +49,7 @@ export class I18n {
       return
     }
 
-    const template = phrase.split(DOTNOTATION).reduce((object: any, key: string) => {
+    const template = phrase.split('.').reduce((object: any, key: string) => {
       if (!object || !Object.prototype.hasOwnProperty.call(object, key)) {
         logger.warn(`current locale doesn't contain ${phrase}`)
         return undefined

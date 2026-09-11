@@ -1,15 +1,9 @@
 import { BaseAdapter } from '../adapters'
-export interface ILocaleFileName {
-  [locale: string]: string
-}
+export type ILocaleFileName = Record<string, string>
 
-export interface ILocale {
-  [key: string]: any
-}
+export type ILocale = Record<string, any>
 
-export interface ILocaleMap {
-  [language: string]: ILocale
-}
+export type ILocaleMap = Record<string, ILocale>
 
 export interface II18nConstructorOptions {
   adapter: BaseAdapter
@@ -22,14 +16,14 @@ export interface IFileSyncAdapterConstructorOptions {
 }
 
 export enum EFileChangeType {
-  change = 'change'
+  change = 'change',
 }
 
 export enum ERUN_ENV {
-  dev = 'development'
+  dev = 'development',
 }
 
 export enum EPlatform {
   node = 'node',
-  web = 'web'
+  web = 'web',
 }

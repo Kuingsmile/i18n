@@ -35,7 +35,7 @@ export class FileSyncAdapter extends BaseAdapter {
     }
     const filePath = path.join(this.localesBaseDir, this.localeFileName[language])
     const fileContent = fs.readFileSync(filePath, {
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     })
     try {
       const locale = JSON.parse(fileContent)
