@@ -1,3 +1,22 @@
+##  (2026-09-12)
+
+* :art: Style(custom): lint 9e15a35
+* :bug: Fix(custom): allow locale fallback after file read failures e9290e1
+* :bug: Fix(custom): declare and return null for missing adapter locales 0bd010a
+* :bug: Fix(custom): discover only regular JSON locale files 26b2c8d
+* :bug: Fix(custom): export public locale and constructor types 34a64ca
+* :bug: Fix(custom): fall back to the default language for missing phrases 8cc1360
+* :bug: Fix(custom): ignore inherited locale entries and store special names safely 83bc0a6
+* :bug: Fix(custom): interpolate placeholders once with literal replacement values edaf149
+* :bug: Fix(custom): isolate browser exports from Node filesystem imports 003ff6a
+* :bug: Fix(custom): preserve empty translations and reject non-string templates 334b8c6
+* :package: Chore(custom): remove mocha c321e9f
+* :package: Chore(custom): upgrade deps and eslint 86a35e7
+* :pencil: Docs(custom): new docs b9f4ecd
+* :sparkles: Feature(custom): add performance benchmarking suite and improve translation handling 5c8273f
+
+
+
 ##  (2025-06-15)
 
 * :hammer: Refactor(custom): update f92e6b0
