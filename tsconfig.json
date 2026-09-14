@@ -1,28 +1,28 @@
 {
   "compilerOptions": {
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "jsx": "preserve",
-    "skipLibCheck": true,
-    "importHelpers": true,
-    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "allowSyntheticDefaultImports": true,
-    "rootDir": "src",
+    "importHelpers": true,
+    "jsx": "preserve",
+    "lib": ["ScriptHost", "esnext", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "outDir": "dist",
-    "typeRoots": ["./src/types/*", "./node_modules/@types"],
     "paths": {
       "src/*": ["./src/*"]
     },
-    "lib": ["ScriptHost", "esnext", "DOM"],
+    "resolveJsonModule": true,
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "typeRoots": ["./src/types/*", "./node_modules/@types"],
     "types": ["node"]
   },
-  "include": ["./src/**/*.ts", "./tests/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "include": ["./src/**/*.ts", "./tests/**/*.ts"]
 }
