@@ -14,7 +14,12 @@ export default defineConfig(
     ignores: ['**/node_modules/**', '**/dist/**', 'vitest.workspace.mjs', 'cases/**', 'test/**'],
   },
   {
-    files: ['./src/*.{ts,tsx,cts,mts,js,cjs,mjs}', 'eslint.config.js', 'rollup.config.js', '/benchmark/index.js'],
+    files: [
+      './src/**/*.{ts,tsx,cts,mts,js,cjs,mjs}',
+      './eslint.config.js',
+      './rollup.config.js',
+      './benchmark/index.js',
+    ],
     extends: [js.configs.recommended, tseslint.configs.recommended, tseslint.configs.stylistic],
     languageOptions: { globals: globals.node },
     plugins: { 'simple-import-sort': simpleImportSort, unicorn: eslintPluginUnicorn },
