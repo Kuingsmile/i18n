@@ -43,13 +43,19 @@ export default defineConfig(
         }),
       ],
     },
-    // Type declarations
+    // Match declaration module kinds to the ESM and CommonJS runtime entries.
     {
       input: `src/${name}.ts`,
-      output: {
-        file: `dist/${name}.d.ts`,
-        format: 'esm',
-      },
+      output: [
+        {
+          file: `dist/${name}.d.ts`,
+          format: 'esm',
+        },
+        {
+          file: `dist/${name}.d.cts`,
+          format: 'esm',
+        },
+      ],
       external,
       plugins: [
         dts({
