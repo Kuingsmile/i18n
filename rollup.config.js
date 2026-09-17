@@ -1,23 +1,19 @@
+import { readFileSync } from 'node:fs'
+import { isBuiltin } from 'node:module'
+
 import typescript from '@rollup/plugin-typescript'
 import { defineConfig } from 'rollup'
 import { dts } from 'rollup-plugin-dts'
 
-const external = [
-  'chalk',
-  'tslib',
-  'fs',
-  'path',
-  'util',
-  'node:fs',
-  'node:path',
-  'node:util',
-  'node:process',
-  'process',
-]
+const { dependencies = {}, peerDependencies = {} } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+)
+const externalPackages = Object.keys({ ...dependencies, ...peerDependencies })
+const external = id => isBuiltin(id) || externalPackages.some(pkg => id === pkg || id.startsWith(`${pkg}/`))
 
 export default defineConfig(
   ['index', 'browser'].flatMap(name => [
-    // Main build for ESM and CJS
+    // Keep each runtime entry self-contained for Node.js and browser consumers.
     {
       input: `src/${name}.ts`,
       output: [
@@ -25,7 +21,6 @@ export default defineConfig(
           file: `dist/${name}.js`,
           format: 'esm',
           sourcemap: true,
-          exports: 'named',
         },
         {
           file: `dist/${name}.cjs`,
@@ -35,23 +30,18 @@ export default defineConfig(
           interop: 'auto',
         },
       ],
-      external: id => {
-        return external.some(dep => id === dep || id.startsWith(dep + '/'))
-      },
+      external,
       plugins: [
         typescript({
           tsconfig: './tsconfig.json',
-          sourceMap: true,
-          declaration: false,
-          exclude: ['test/**/*', 'benchmark/**/*'],
           compilerOptions: {
-            module: 'esnext',
+            // Rollup owns JavaScript emission; tsc only checks types.
+            noEmit: false,
+            sourceMap: true,
+            inlineSources: true,
           },
         }),
       ],
-      treeshake: {
-        moduleSideEffects: false,
-      },
     },
     // Type declarations
     {

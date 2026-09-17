@@ -30,6 +30,10 @@
   "module": "./dist/index.js",
   "browser": "./dist/browser.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "benchmark": "npm run build && node benchmark/index.mjs",
     "build": "rollup -c",

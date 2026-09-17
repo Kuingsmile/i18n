@@ -1,28 +1,22 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    "jsx": "preserve",
-    "lib": ["ScriptHost", "esnext", "DOM"],
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM"],
     "module": "esnext",
     "moduleResolution": "bundler",
+    "noEmit": true,
+    "noEmitOnError": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "dist",
-    "paths": {
-      "src/*": ["./src/*"]
-    },
-    "resolveJsonModule": true,
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "typeRoots": ["./src/types/*", "./node_modules/@types"],
+    "target": "ES2022",
     "types": ["node"]
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["./src/**/*.ts", "./tests/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }
