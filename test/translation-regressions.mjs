@@ -2,10 +2,40 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 for (const entry of ['index.js', 'index.cjs', 'browser.js', 'browser.cjs']) {
-  const { I18n, ObjectAdapter, logger } = await import(`../dist/${entry}`)
+  const { createTypedI18n, I18n, ObjectAdapter, logger } = await import(`../dist/${entry}`)
   const make = locales => new I18n({ adapter: new ObjectAdapter(locales), defaultLanguage: 'en' })
 
   describe(`translation regressions (${entry})`, () => {
+    it('keeps the typed helper bound to live language, fallback and adapter state', context => {
+      context.mock.method(logger, 'warn', () => {})
+      context.mock.method(logger, 'error', () => {})
+      const schema = { title: 'Schema only', user: { greeting: 'Schema ${name}' }, empty: '' }
+      const en = { title: 'Account', user: { greeting: 'Hello, ${name}!' }, empty: '' }
+      const adapter = new ObjectAdapter({ en, fr: { user: { greeting: 'Bonjour, ${name}!' } } })
+      const i18n = createTypedI18n({ adapter, defaultLanguage: 'en', schema })
+      const { t } = i18n
+
+      assert.ok(i18n instanceof I18n)
+      assert.equal(i18n.getAdapter(), adapter)
+      assert.equal(t('user.greeting', { name: 'Ada' }), 'Hello, Ada!')
+      assert.equal(t('title'), 'Account')
+      assert.equal(t('empty'), '')
+      i18n.setLanguage('fr')
+      assert.equal(t('user.greeting', { name: 'Ada' }), 'Bonjour, Ada!')
+      assert.equal(t('title'), 'Account')
+      en.title = 'Edited'
+      assert.equal(t('title'), 'Edited')
+      adapter.setLocale('es', { title: 'Cuenta' })
+      i18n.setDefaultLanguage('es')
+      assert.equal(t('title'), 'Cuenta')
+      adapter.setLocale('fr', { title: 'Compte', dynamic: 'Outside the schema' })
+      assert.equal(t('title'), 'Compte')
+      assert.equal(i18n.translate('dynamic'), 'Outside the schema')
+      assert.equal(t('user.greeting', { name: 'Ada' }), undefined)
+      adapter.setLocales({})
+      assert.equal(t('title'), undefined)
+    })
+
     it('observes replacements and in-place edits after repeated lookups', () => {
       const en = { user: { title: 'Original' } }
       const i18n = make({ en })

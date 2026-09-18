@@ -434,7 +434,7 @@ The library is written in TypeScript and includes comprehensive type definitions
 import { I18n, ObjectAdapter } from '@piclist/i18n'
 import type { ILocaleMap, II18nConstructorOptions } from '@piclist/i18n'
 
-// Type-safe locale definition
+// Unrestricted locale definition (compatible with existing consumers)
 const locales: ILocaleMap = {
   en: {
     message: 'Hello, world!',
@@ -450,6 +450,69 @@ console.log(message ?? 'Translation unavailable')
 
 Public types are available through `import type` from `@piclist/i18n`: `ILocale`, `ILocaleMap`, `ILocaleFileName`,
 `II18nConstructorOptions`, and `IFileSyncAdapterConstructorOptions`.
+
+### Optional typed translations
+
+Use `createTypedI18n()` with a reference locale to infer nested string keys and `${placeholder}` names. Its `t()` helper
+is bound to the instance, so components can import or destructure it directly. The factory accepts the same adapter and
+language options as `I18n`, plus a `schema` used for type inference. It works with any existing adapter in Node.js and
+with browser-compatible adapters in the browser.
+
+```typescript
+import { createTypedI18n, ObjectAdapter } from '@piclist/i18n'
+
+const en = {
+  navigation: { home: 'Home' },
+  welcome: 'Hello, ${name}! You have ${count} messages.',
+} as const
+
+export const i18n = createTypedI18n({
+  adapter: new ObjectAdapter({
+    en,
+    fr: {
+      navigation: { home: 'Accueil' },
+      welcome: 'Bonjour, ${name} ! Vous avez ${count} messages.',
+    },
+  }),
+  defaultLanguage: 'en',
+  schema: en,
+})
+
+export const { t } = i18n
+t('navigation.home') // 'Home'
+t('welcome', { name: 'Ada', count: 2 }) // 'Hello, Ada! You have 2 messages.'
+
+// TypeScript errors:
+// t('navigation.missing')
+// t('welcome')
+// t('welcome', { name: 'Ada' }) // Missing count
+// t('welcome', { name: 'Ada', count: 2, typo: true })
+
+i18n.setLanguage('fr')
+t('navigation.home') // 'Accueil'; the same helper observes language changes
+
+// Dynamic keys and partial arguments remain available through translate().
+i18n.translate('any.dynamic.key', { arbitrary: true })
+```
+
+Use `as const` on the reference locale to preserve literal strings, including when supplying an inline `schema` object.
+Templates widened to `string` (such as JSON imports) still provide key checking but accept an optional
+argument record with arbitrary names. Annotating the schema as `ILocale` or `ILocaleMap` loses the literal information
+needed for inference.
+
+The helper checks paths to string leaves in object schemas, excluding arrays, non-string leaves, and properties with
+literal dots in their names. Templates with placeholders require all named arguments; templates without placeholders
+accept no arguments or an empty record. Values use the existing `String()` conversion, including numbers and booleans.
+As with normal TypeScript object checks, excess properties are rejected on object literals; a variable may contain
+additional properties.
+
+The adapter supplies all runtime translations: `schema` does not load or validate locale data. Keep other locales and
+later adapter updates consistent with the reference keys and placeholder names. `t()` preserves fallback behavior and
+returns `string | undefined`, just like `translate()`. Existing `I18n`, `ILocale`, and `translate(phrase: string, args?: any)`
+signatures remain available unchanged.
+
+The factory also exports `TranslationKeys`, `PlaceholderNames`, `TranslationArgs`, `TypedTranslate`, `TypedI18n`, and
+`TypedI18nOptions` for reusable component and application types.
 
 ## 🧪 Testing
 
