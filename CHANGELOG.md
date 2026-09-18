@@ -1,3 +1,24 @@
+# :tada: 3.0.0 (2026-09-18)
+
+### :sparkles: Features
+
+* add richer internationalization as opt-in functionality ([29f0084](https://github.com/Kuingsmile/i18n/commit/29f0084))
+* add type-safed translation helper ([318cbd9](https://github.com/Kuingsmile/i18n/commit/318cbd9))
+
+### :bug: Bug Fixes
+
+* fix CommonJS TypeScript declarations ([d6290af](https://github.com/Kuingsmile/i18n/commit/d6290af))
+
+### :pencil: Documentation
+
+* update docs ([875735e](https://github.com/Kuingsmile/i18n/commit/875735e))
+
+### :package: Chore
+
+* add missing package ([108c814](https://github.com/Kuingsmile/i18n/commit/108c814))
+* fix eslint files config ([ef940b9](https://github.com/Kuingsmile/i18n/commit/ef940b9))
+* migrate to node-bump-version v3 ([4e68aa6](https://github.com/Kuingsmile/i18n/commit/4e68aa6))
+* update typescript and rollup config ([84bef28](https://github.com/Kuingsmile/i18n/commit/84bef28))
 ## 2.1.0 (2026-09-12)
 
 * :art: Style(custom): lint 9e15a35
