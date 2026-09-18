@@ -13,6 +13,7 @@ Designed to work seamlessly in both Node.js and browser environments.
 - 🌐 **Universal** - Works in both Node.js and browser environments
 - 📝 **TypeScript Support** - Full TypeScript definitions included
 - 🎯 **Template Variables** - Dynamic string interpolation with `${variable}` syntax
+- 🌍 **Opt-in Internationalization** - Ordered fallback languages and native Intl plural, number, and date helpers
 - 🔌 **Extensible** - Easy to create custom adapters
 - 📦 **Small Dependency Footprint** - Runtime dependencies: `chalk` and `tslib`
 
@@ -179,15 +180,17 @@ new I18n(options: II18nConstructorOptions)
 
 - `adapter`: BaseAdapter - The adapter instance to use for locale data
 - `defaultLanguage`: string - The default language code
+- `fallbackLanguages?`: readonly string[] - Ordered languages to try between the current and default languages; omitted
+  or empty preserves the default fallback behavior
 
 #### Methods
 
 ##### `translate(phrase: string, args?: any): string | undefined`
 
 Translates a phrase using dot notation for nested keys and interpolates `${variable}` placeholders from `args`. Missing
-locales or keys fall back to the default language. Returns `undefined` if neither locale is available, the key is still
-missing, or the resolved value is not a string. An empty string is a valid translation and is returned unchanged. See
-[Fallback Behavior](#fallback-behavior) for details.
+locales or keys fall back to the default language, trying any configured `fallbackLanguages` first. Returns `undefined`
+if no locale is available, the key is still missing, or the resolved value is not a string. An empty string is a valid
+translation and is returned unchanged. See [Fallback Behavior](#fallback-behavior) for details.
 
 ```typescript
 // Basic translation
@@ -232,6 +235,27 @@ Returns the current adapter instance.
 ```typescript
 const adapter = i18n.getAdapter()
 ```
+
+##### `selectPlural(count: number, options?: Intl.PluralRulesOptions, locale?: string): Intl.LDMLPluralRule`
+
+Returns the `Intl.PluralRules` category (`zero`, `one`, `two`, `few`, `many`, or `other`) for a count. Defaults to
+cardinal rules; pass `{ type: 'ordinal' }` for ordinal selection. Use the category to choose an existing translation
+key. Calling `translate()` with a `count` argument does not automatically select a plural form.
+
+##### `formatNumber(value: number | bigint, options?: Intl.NumberFormatOptions, locale?: string): string`
+
+Formats a number with `Intl.NumberFormat`, including native currency, percent, grouping, and precision options.
+
+##### `formatDate(value: Date | number, options?: Intl.DateTimeFormatOptions, locale?: string): string`
+
+Formats a `Date` or timestamp in milliseconds with `Intl.DateTimeFormat`. Parse date strings explicitly before passing
+them to this method. Supply `timeZone` when output should be independent of the host's time zone.
+
+All three helpers use the current language unless the third argument supplies an explicit Intl locale. They do not
+change the current language or consult translation fallback languages. They pass options to the
+[standard Intl APIs](https://tc39.es/ecma402/) and propagate native errors for invalid locales, options, or dates.
+Output and supported locales depend on the runtime's Intl data. Intl is only used when a helper is called; ordinary
+translation does not require it.
 
 ### Adapters
 
@@ -399,9 +423,9 @@ i18n.translate('product.price', {
 
 ### Fallback Behavior
 
-If the current locale is unavailable, the library tries the default locale. If a key resolves to `undefined` in the
-current locale, it tries the same key in the default locale. If neither locale provides the key, `translate()` returns
-`undefined`.
+By default, if the current locale is unavailable, the library tries the default locale. If a key resolves to `undefined`
+in the current locale, it tries the same key in the default locale. If neither locale provides the key, `translate()`
+returns `undefined`.
 
 Empty strings are returned unchanged. Existing non-string values such as `null`, numbers, or objects return `undefined`
 without triggering key fallback.
@@ -425,6 +449,81 @@ i18n.translate('count') // undefined (no fallback for an existing number)
 
 const text = i18n.translate('missing') ?? 'Translation unavailable'
 ```
+
+### Optional Fallback Chains
+
+Set `fallbackLanguages` to try additional languages in order. Lookup visits the current language first, then each
+configured language, then the default language, skipping duplicate codes after their first occurrence. It continues only
+for unavailable locales or keys resolving to `undefined`. Empty strings and existing non-string values stop lookup, just
+as they do without a chain.
+
+```typescript
+const i18n = new I18n({
+  adapter: new ObjectAdapter({
+    'fr-CA': { greeting: 'Allô !' },
+    fr: { greeting: 'Bonjour !', title: 'Compte' },
+    en: { greeting: 'Hello!', title: 'Account', help: 'Help' },
+  }),
+  defaultLanguage: 'en',
+  fallbackLanguages: ['fr'],
+})
+
+i18n.setLanguage('fr-CA')
+i18n.translate('greeting') // 'Allô !' from fr-CA
+i18n.translate('title') // 'Compte' from fr
+i18n.translate('help') // 'Help' from en
+```
+
+Omitting this option or passing `[]` keeps current-to-default fallback. Language codes remain exact adapter keys after
+trimming surrounding whitespace: `fr-CA`, `fr-ca`, and `fr_CA` are distinct. There is no automatic parent-language
+lookup or locale normalization; include `fr` explicitly if you want it as a fallback for `fr-CA`.
+
+The constructor copies the chain. Later edits to the supplied array do not reconfigure the instance. Changes through
+`setLanguage()`, `setDefaultLanguage()`, and adapter updates are reflected in subsequent lookups. `createTypedI18n()`
+accepts the same option, and its `t()` helper follows the configured chain.
+
+### Plural Selection and Formatting
+
+Choose translation keys explicitly using plural categories and interpolate formatted values with the existing
+`${variable}` syntax. Translation strings are never interpreted as ICU messages or any other message syntax.
+
+```typescript
+const i18n = new I18n({
+  adapter: new ObjectAdapter({
+    'en-US': {
+      cart: { one: '${count} item', other: '${count} items' },
+      summary: 'Total: ${total}. Ships ${date}.',
+    },
+  }),
+  defaultLanguage: 'en-US',
+})
+
+const count = 1200
+const category = i18n.selectPlural(count)
+i18n.translate(`cart.${category}`, { count: i18n.formatNumber(count) }) // '1,200 items'
+
+i18n.translate('summary', {
+  total: i18n.formatNumber(1234.5, { style: 'currency', currency: 'USD' }),
+  date: i18n.formatDate(new Date('2024-02-29T12:00:00Z'), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }),
+}) // 'Total: $1,234.50. Ships February 29, 2024.'
+
+i18n.selectPlural(2, { type: 'ordinal' }) // 'two'
+i18n.formatNumber(1234.5, undefined, 'de-DE') // '1.234,5'
+```
+
+Provide keys for every category used by your locale and rule options; the selector does not redirect missing category
+keys to `other`. Normal translation fallback still applies to the selected key. If fallback text needs a different
+plural rule, pass its locale explicitly when selecting the category. Helpers always default to `getLanguage()`, even
+when a translation comes from a fallback locale.
+
+Applications using custom locale keys such as `en_US` can keep them for translation and pass a valid Intl locale such as
+`en-US` as the third helper argument. No key conversion is performed by the library. These helpers are also available on
+instances returned by `createTypedI18n()`.
 
 ## 🔧 TypeScript Support
 
@@ -496,9 +595,9 @@ i18n.translate('any.dynamic.key', { arbitrary: true })
 ```
 
 Use `as const` on the reference locale to preserve literal strings, including when supplying an inline `schema` object.
-Templates widened to `string` (such as JSON imports) still provide key checking but accept an optional
-argument record with arbitrary names. Annotating the schema as `ILocale` or `ILocaleMap` loses the literal information
-needed for inference.
+Templates widened to `string` (such as JSON imports) still provide key checking but accept an optional argument record
+with arbitrary names. Annotating the schema as `ILocale` or `ILocaleMap` loses the literal information needed for
+inference.
 
 The helper checks paths to string leaves in object schemas, excluding arrays, non-string leaves, and properties with
 literal dots in their names. Templates with placeholders require all named arguments; templates without placeholders
@@ -508,8 +607,8 @@ additional properties.
 
 The adapter supplies all runtime translations: `schema` does not load or validate locale data. Keep other locales and
 later adapter updates consistent with the reference keys and placeholder names. `t()` preserves fallback behavior and
-returns `string | undefined`, just like `translate()`. Existing `I18n`, `ILocale`, and `translate(phrase: string, args?: any)`
-signatures remain available unchanged.
+returns `string | undefined`, just like `translate()`. Existing `I18n`, `ILocale`, and
+`translate(phrase: string, args?: any)` signatures remain available unchanged.
 
 The factory also exports `TranslationKeys`, `PlaceholderNames`, `TranslationArgs`, `TypedTranslate`, `TypedI18n`, and
 `TypedI18nOptions` for reusable component and application types.

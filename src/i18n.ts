@@ -6,12 +6,14 @@ export class I18n {
   private readonly adapter: BaseAdapter
   private currentLanguage: string
   private defaultLanguage: string
+  private readonly fallbackLanguages: readonly string[]
 
   constructor(options: II18nConstructorOptions) {
     const { adapter, defaultLanguage } = options
     this.adapter = adapter
     this.currentLanguage = defaultLanguage.trim()
     this.defaultLanguage = this.currentLanguage
+    this.fallbackLanguages = options.fallbackLanguages?.map(language => language.trim()) ?? []
   }
 
   getAdapter(): BaseAdapter {
@@ -30,6 +32,19 @@ export class I18n {
     this.defaultLanguage = language.trim()
   }
 
+  /** Select a cardinal or ordinal category without interpreting translation strings. */
+  selectPlural(count: number, options?: Intl.PluralRulesOptions, locale = this.currentLanguage): Intl.LDMLPluralRule {
+    return new Intl.PluralRules(locale, options).select(count)
+  }
+
+  formatNumber(value: number | bigint, options?: Intl.NumberFormatOptions, locale = this.currentLanguage): string {
+    return new Intl.NumberFormat(locale, options).format(value)
+  }
+
+  formatDate(value: Date | number, options?: Intl.DateTimeFormatOptions, locale = this.currentLanguage): string {
+    return new Intl.DateTimeFormat(locale, options).format(value)
+  }
+
   private getLocale(): ILocale | null {
     let currentLocale = this.adapter.getLocale(this.currentLanguage)
     if (!currentLocale) {
@@ -44,6 +59,10 @@ export class I18n {
   }
 
   translate(phrase: string, args?: any): string | undefined {
+    if (this.fallbackLanguages.length > 0) {
+      return this.postProcess(this.resolveWithFallbacks(phrase), args)
+    }
+
     const currentLocale = this.getLocale()
     if (!currentLocale) {
       return
@@ -60,6 +79,31 @@ export class I18n {
     }
 
     return this.postProcess(template, args)
+  }
+
+  private resolveWithFallbacks(phrase: string): unknown {
+    const languages = new Set([this.currentLanguage, ...this.fallbackLanguages, this.defaultLanguage])
+    const keys = phrase.includes('.') ? phrase.split('.') : phrase
+    let hasLocale = false
+
+    for (const language of languages) {
+      const locale = this.adapter.getLocale(language)
+      if (!locale) {
+        continue
+      }
+      hasLocale = true
+      const template = this.resolve(locale, keys)
+      // Existing non-string values still stop fallback, just as in translate().
+      if (template !== undefined) {
+        return template
+      }
+    }
+
+    if (hasLocale) {
+      logger.warn(`current locale doesn't contain ${phrase}`)
+    } else {
+      logger.error(`current locale ${this.currentLanguage} is null`)
+    }
   }
 
   private resolve(locale: ILocale | null, keys: string | string[]): unknown {

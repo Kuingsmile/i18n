@@ -55,7 +55,7 @@
     "prepare": "husky",
     "prepublishOnly": "yarn run clean && yarn run build",
     "release": "yarn run build && bump-version",
-    "test": "node --test ./test/index.js ./test/translation-regressions.mjs ./test/type-declarations.mjs"
+    "test": "node --test ./test/index.js ./test/translation-regressions.mjs ./test/internationalization.mjs ./test/type-declarations.mjs"
   },
   "config": {
     "commitizen": {

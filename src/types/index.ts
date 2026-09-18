@@ -8,6 +8,8 @@ export type ILocaleMap = Record<string, ILocale>
 export interface II18nConstructorOptions {
   adapter: BaseAdapter
   defaultLanguage: string
+  /** Ordered fallbacks between the current and default languages. */
+  fallbackLanguages?: readonly string[]
 }
 
 export interface IFileSyncAdapterConstructorOptions {
