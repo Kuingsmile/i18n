@@ -1,4 +1,4 @@
-##  (2026-09-12)
+## 2.1.0 (2026-09-12)
 
 * :art: Style(custom): lint 9e15a35
 * :bug: Fix(custom): allow locale fallback after file read failures e9290e1
@@ -17,7 +17,7 @@
 
 
 
-##  (2025-06-15)
+## 2.0.0 (2025-06-15)
 
 * :hammer: Refactor(custom): update f92e6b0
 * :package: Chore: fix ci scripts 6403834
